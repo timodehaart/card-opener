@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "Dezcartes Digital Platform",
-  description: "The Dezcartes digital platform.",
+  title: "Card Opener",
+  description: "Pick a pack and open your cards.",
 };
 
 export default function RootLayout({
@@ -16,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

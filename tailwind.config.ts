@@ -8,6 +8,11 @@ const config: Config = {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
+  safelist: [
+    "hover:border-blue-400",
+    "hover:border-violet-400",
+    "hover:border-orange-400",
+  ],
   theme: {
     container: {
       center: true,
@@ -17,6 +22,9 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        serif: ["'Crimson Pro'", "Georgia", "serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
