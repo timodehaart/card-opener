@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Menu, User, ChevronLeft, ChevronRight, ShoppingBag, LayoutGrid, Clock, Package, Shuffle, Eye, X, Trophy, BookOpen } from "lucide-react";
+import {
+  Menu, ChevronLeft, ChevronRight, ShoppingBag, LayoutGrid,
+  Clock, Package, Shuffle, Eye, X, Trophy, BookOpen, Shuffle as ShuffleIcon,
+} from "lucide-react";
 
 type PackType = "science" | "philosophy" | "art";
-type NavTab = "home" | "collection" | "challenges" | "mechanics" | "shop";
+type NavTab = "home" | "collection" | "challenges" | "mechanics";
 type Screen = "home" | "detail" | "opening";
 
 interface CardData {
@@ -19,6 +22,7 @@ interface Pack {
   name: string;
   subtitle: string;
   type: string;
+  icon: string;
   packImage: string;
   glowColor: string;
   gradientA: string;
@@ -57,8 +61,9 @@ const packs: Pack[] = [
     name: "Scientific Revolution",
     subtitle: "Science Booster Pack",
     type: "SCIENCE",
+    icon: "⚗️",
     packImage: "/science_pack.png",
-    glowColor: "rgba(59, 130, 246, 0.6)",
+    glowColor: "rgba(59, 130, 246, 0.5)",
     gradientA: "#1d4ed8",
     gradientB: "#0ea5e9",
     accentColor: "#60a5fa",
@@ -69,8 +74,9 @@ const packs: Pack[] = [
     name: "Age of Reason",
     subtitle: "Philosophy Booster Pack",
     type: "PHILOSOPHY",
+    icon: "🧠",
     packImage: "/philosophy_pack.png",
-    glowColor: "rgba(109, 40, 217, 0.65)",
+    glowColor: "rgba(109, 40, 217, 0.55)",
     gradientA: "#6d28d9",
     gradientB: "#7c3aed",
     accentColor: "#a78bfa",
@@ -81,8 +87,9 @@ const packs: Pack[] = [
     name: "Modern Art",
     subtitle: "Art Booster Pack",
     type: "ART",
+    icon: "🎨",
     packImage: "/art_pack.png",
-    glowColor: "rgba(194, 65, 12, 0.6)",
+    glowColor: "rgba(194, 65, 12, 0.5)",
     gradientA: "#c2410c",
     gradientB: "#ea580c",
     accentColor: "#fb923c",
@@ -93,7 +100,7 @@ const packs: Pack[] = [
 const CARDS_PER_PACK = 3;
 const REGEN_SECONDS = 12 * 60 * 60;
 const MAX_PACKS = 2;
-const NAV_H = 58;
+const NAV_H = 62;
 
 function formatTime(s: number) {
   const h = Math.floor(s / 3600);
@@ -108,50 +115,14 @@ function pickRandom<T>(arr: T[], n: number): T[] {
 }
 
 // ── Placeholder pages ──────────────────────────────────────────────────────
-function CollectionPage() {
+function PlaceholderPage({ icon, title, desc, bg, iconColor }: { icon: React.ReactNode; title: string; desc: string; bg: string; iconColor: string }) {
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: "0 32px" }}>
-      <div style={{ width: 64, height: 64, borderRadius: 20, background: "linear-gradient(135deg,#e0e7ff,#c7d2fe)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <LayoutGrid size={28} color="#6366f1" />
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: "0 40px" }}>
+      <div style={{ width: 72, height: 72, borderRadius: 22, background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {icon}
       </div>
-      <h2 style={{ fontFamily: "'Crimson Pro',Georgia,serif", fontSize: "1.6rem", fontWeight: 400, color: "#0f172a", margin: 0 }}>Collection</h2>
-      <p style={{ fontSize: 13, color: "#94a3b8", textAlign: "center", lineHeight: 1.5, margin: 0 }}>Your collected cards will appear here. Open packs to start building your collection.</p>
-    </div>
-  );
-}
-
-function ChallengesPage() {
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: "0 32px" }}>
-      <div style={{ width: 64, height: 64, borderRadius: 20, background: "linear-gradient(135deg,#fef3c7,#fde68a)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Trophy size={28} color="#d97706" />
-      </div>
-      <h2 style={{ fontFamily: "'Crimson Pro',Georgia,serif", fontSize: "1.6rem", fontWeight: 400, color: "#0f172a", margin: 0 }}>Challenges</h2>
-      <p style={{ fontSize: 13, color: "#94a3b8", textAlign: "center", lineHeight: 1.5, margin: 0 }}>Daily and weekly challenges will be listed here. Complete them to earn rare cards and rewards.</p>
-    </div>
-  );
-}
-
-function MechanicsPage() {
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: "0 32px" }}>
-      <div style={{ width: 64, height: 64, borderRadius: 20, background: "linear-gradient(135deg,#dcfce7,#bbf7d0)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <BookOpen size={28} color="#16a34a" />
-      </div>
-      <h2 style={{ fontFamily: "'Crimson Pro',Georgia,serif", fontSize: "1.6rem", fontWeight: 400, color: "#0f172a", margin: 0 }}>Game Mechanics</h2>
-      <p style={{ fontSize: 13, color: "#94a3b8", textAlign: "center", lineHeight: 1.5, margin: 0 }}>Rules, card interactions, and strategy guides will be explained here.</p>
-    </div>
-  );
-}
-
-function ShopPage() {
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: "0 32px" }}>
-      <div style={{ width: 64, height: 64, borderRadius: 20, background: "linear-gradient(135deg,#fce7f3,#fbcfe8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <ShoppingBag size={28} color="#db2777" />
-      </div>
-      <h2 style={{ fontFamily: "'Crimson Pro',Georgia,serif", fontSize: "1.6rem", fontWeight: 400, color: "#0f172a", margin: 0 }}>Shop</h2>
-      <p style={{ fontSize: 13, color: "#94a3b8", textAlign: "center", lineHeight: 1.5, margin: 0 }}>Purchase booster packs and special bundles here. More items coming soon.</p>
+      <h2 style={{ fontFamily: "'Crimson Pro',Georgia,serif", fontSize: "1.7rem", fontWeight: 400, color: "#0f172a", margin: 0 }}>{title}</h2>
+      <p style={{ fontSize: 13, color: "#94a3b8", textAlign: "center", lineHeight: 1.6, margin: 0 }}>{desc}</p>
     </div>
   );
 }
@@ -187,16 +158,8 @@ export default function PackSelection() {
 
   function goToDetail() { setScreen("detail"); }
   function goBack() { setScreen("home"); setOpenedCards([]); setRevealedCount(0); setSwipeProgress(0); }
-
   function handleOpenPack() { setScreen("opening"); setOpenedCards([]); setRevealedCount(0); setSwipeProgress(0); }
-
-  function handleCollect() {
-    setAvailablePacks(p => Math.max(0, p - 1));
-    setScreen("home");
-    setOpenedCards([]);
-    setRevealedCount(0);
-    setSwipeProgress(0);
-  }
+  function handleCollect() { setAvailablePacks(p => Math.max(0, p - 1)); setScreen("home"); setOpenedCards([]); setRevealedCount(0); setSwipeProgress(0); }
 
   function onPointerDown(e: React.PointerEvent) {
     dragStartX.current = e.clientX;
@@ -227,42 +190,38 @@ export default function PackSelection() {
 
   const allRevealed = openedCards.length > 0 && revealedCount >= CARDS_PER_PACK;
 
-  // Nav items config
-  const navItems: { id: NavTab; label: string; icon: (active: boolean) => React.ReactNode }[] = [
-    {
-      id: "home", label: "Home",
-      icon: (a) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke={a ? "#6366f1" : "#94a3b8"} strokeWidth={a ? "2" : "1.5"} fill={a ? "#ede9fe" : "none"} />
-          <path d="M9 21V12h6v9" stroke={a ? "#6366f1" : "#94a3b8"} strokeWidth={a ? "2" : "1.5"} />
-        </svg>
-      ),
-    },
-    {
-      id: "collection", label: "Collection",
-      icon: (a) => <LayoutGrid size={20} color={a ? "#6366f1" : "#94a3b8"} strokeWidth={a ? 2 : 1.5} fill={a ? "#ede9fe" : "none"} />,
-    },
-    {
-      id: "challenges", label: "Challenges",
-      icon: (a) => <Trophy size={20} color={a ? "#6366f1" : "#94a3b8"} strokeWidth={a ? 2 : 1.5} />,
-    },
-    {
-      id: "mechanics", label: "Mechanics",
-      icon: (a) => <BookOpen size={20} color={a ? "#6366f1" : "#94a3b8"} strokeWidth={a ? 2 : 1.5} />,
-    },
-    {
-      id: "shop", label: "Shop",
-      icon: (a) => <ShoppingBag size={20} color={a ? "#6366f1" : "#94a3b8"} strokeWidth={a ? 2 : 1.5} />,
-    },
-  ];
-
-  // When switching away from home, reset sub-screens
   function handleNavTab(tab: NavTab) {
     setNavTab(tab);
     if (tab === "home") setScreen("home");
   }
 
   const isHomeSub = navTab === "home" && (screen === "detail" || screen === "opening");
+
+  const navItems = [
+    {
+      id: "home" as NavTab, label: "Home",
+      icon: (a: boolean) => (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"
+            stroke={a ? "#7c3aed" : "#94a3b8"} strokeWidth={a ? "2" : "1.5"}
+            fill={a ? "#ede9fe" : "none"} />
+          <path d="M9 21V12h6v9" stroke={a ? "#7c3aed" : "#94a3b8"} strokeWidth={a ? "2" : "1.5"} />
+        </svg>
+      ),
+    },
+    {
+      id: "collection" as NavTab, label: "Collection",
+      icon: (a: boolean) => <LayoutGrid size={22} color={a ? "#7c3aed" : "#94a3b8"} strokeWidth={a ? 2 : 1.5} />,
+    },
+    {
+      id: "challenges" as NavTab, label: "Challenges",
+      icon: (a: boolean) => <Trophy size={22} color={a ? "#7c3aed" : "#94a3b8"} strokeWidth={a ? 2 : 1.5} />,
+    },
+    {
+      id: "mechanics" as NavTab, label: "Mechanics",
+      icon: (a: boolean) => <BookOpen size={22} color={a ? "#7c3aed" : "#94a3b8"} strokeWidth={a ? 2 : 1.5} />,
+    },
+  ];
 
   return (
     <div style={{
@@ -271,6 +230,7 @@ export default function PackSelection() {
       display: "flex", flexDirection: "column",
       maxWidth: 430, margin: "0 auto",
       overflow: "hidden",
+      fontFamily: "system-ui, -apple-system, sans-serif",
     }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
@@ -281,13 +241,13 @@ export default function PackSelection() {
 
         @keyframes pack-float {
           0%,100% { transform: translateY(0px); }
-          50% { transform: translateY(-6px); }
+          50% { transform: translateY(-7px); }
         }
         .pack-float { animation: pack-float 4s ease-in-out infinite; }
 
         @keyframes glow-pulse {
-          0%,100% { opacity:0.55; transform:scale(1); }
-          50% { opacity:0.75; transform:scale(1.04); }
+          0%,100% { opacity:0.5; transform:scale(1); }
+          50% { opacity:0.7; transform:scale(1.05); }
         }
         .glow-pulse { animation: glow-pulse 4s ease-in-out infinite; }
 
@@ -358,8 +318,8 @@ export default function PackSelection() {
         }
 
         .open-btn {
-          width:100%; border:none; border-radius:14px;
-          padding:14px; font-size:14px; font-weight:700;
+          width:100%; border:none; border-radius:16px;
+          padding:15px; font-size:15px; font-weight:700;
           letter-spacing:0.04em; color:white; cursor:pointer;
           transition:transform 0.15s ease;
           box-shadow:0 4px 20px rgba(0,0,0,0.25);
@@ -378,80 +338,105 @@ export default function PackSelection() {
         .secondary-btn:active { transform:scale(0.97); }
         .secondary-btn:hover { background:rgba(255,255,255,0.15); color:white; }
 
-        .pack-selector-tab {
-          padding:6px 12px; border-radius:100px;
-          border:none; background:transparent;
-          font-size:9px; font-weight:700; letter-spacing:0.16em;
-          text-transform:uppercase; cursor:pointer;
-          transition:all 0.18s ease; color:#94a3b8;
+        /* Pack type icon tabs — like screenshot 2 */
+        .pack-icon-tab {
+          display: flex; flex-direction: column; align-items: center; gap: 5px;
+          padding: 10px 14px; border-radius: 16px; border: none;
+          background: white; cursor: pointer;
+          transition: all 0.18s ease;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+          min-width: 76px;
         }
-        .pack-selector-tab.active {
-          background:white;
-          box-shadow:0 1px 6px rgba(0,0,0,0.12);
-          color:#1e293b;
+        .pack-icon-tab.active {
+          box-shadow: 0 2px 12px rgba(124,58,237,0.2);
+          border: 1.5px solid rgba(124,58,237,0.3);
+        }
+        .pack-icon-tab:not(.active) {
+          opacity: 0.55;
+          background: rgba(255,255,255,0.6);
+          box-shadow: none;
+        }
+        .pack-icon-tab-label {
+          font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+          text-transform: uppercase;
         }
       `}</style>
 
-      {/* ── Content area (fills above nav) ── */}
+      {/* ── Content area ── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 0 }}>
 
         {/* ══════════ HOME SCREEN ══════════ */}
         {navTab === "home" && screen === "home" && (
           <div className="fade-in" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-            {/* Top nav */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "44px 20px 10px", flexShrink: 0 }}>
+            {/* Top bar — menu only, no user icon */}
+            <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 14px", flexShrink: 0 }}>
               <button style={{ width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer" }}>
-                <Menu size={21} color="#1e293b" />
+                <Menu size={22} color="#1e293b" />
               </button>
-              <span style={{ fontFamily: "'Crimson Pro',Georgia,serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.3em", textTransform: "uppercase", color: "#1e293b" }}>DEZCARTES</span>
-              <button style={{ width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px solid #e2e8f0", borderRadius: "50%", background: "white", cursor: "pointer", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
-                <User size={16} color="#64748b" />
-              </button>
+              <div style={{ flex: 1, textAlign: "center" }}>
+                <span style={{ fontFamily: "'Crimson Pro',Georgia,serif", fontSize: 13, fontWeight: 600, letterSpacing: "0.3em", textTransform: "uppercase", color: "#1e293b" }}>DEZCARTES</span>
+              </div>
+              {/* spacer to balance menu */}
+              <div style={{ width: 38 }} />
             </div>
 
             {/* Choose label */}
-            <div style={{ textAlign: "center", paddingBottom: 8, flexShrink: 0 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#94a3b8", margin: 0 }}>Choose your booster</p>
+            <div style={{ textAlign: "center", paddingBottom: 12, flexShrink: 0 }}>
+              <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "#94a3b8", margin: 0 }}>Choose your booster</p>
             </div>
 
-            {/* Pack type tabs */}
-            <div style={{ display: "flex", justifyContent: "center", gap: 4, padding: "0 16px 10px", flexShrink: 0 }}>
+            {/* Pack type icon tabs — screenshot 2 style */}
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, padding: "0 20px 16px", flexShrink: 0 }}>
               {packs.map((pack, i) => (
-                <button key={pack.id} className={`pack-selector-tab${activePackIdx === i ? " active" : ""}`} onClick={() => setActivePackIdx(i)}>
-                  {pack.type}
+                <button key={pack.id} className={`pack-icon-tab${activePackIdx === i ? " active" : ""}`} onClick={() => setActivePackIdx(i)}>
+                  <span style={{ fontSize: 22 }}>{pack.icon}</span>
+                  <span className="pack-icon-tab-label" style={{ color: activePackIdx === i ? "#7c3aed" : "#94a3b8" }}>{pack.type}</span>
                 </button>
               ))}
             </div>
 
-            {/* Pack image + arrows — flex-1 to take remaining space */}
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", minHeight: 0 }}>
-              <div className="glow-pulse" style={{ position: "absolute", width: "60%", aspectRatio: "1", borderRadius: "50%", background: `radial-gradient(circle, ${activePack.glowColor} 0%, transparent 70%)`, pointerEvents: "none" }} />
+            {/* Pack frame — card styled container like screenshot 2 */}
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 24px", minHeight: 0, position: "relative" }}>
+              {/* Frame card */}
+              <div style={{
+                width: "100%", maxWidth: 300,
+                background: "white",
+                borderRadius: 24,
+                boxShadow: "0 4px 24px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06)",
+                padding: "20px 16px 20px",
+                display: "flex", flexDirection: "column", alignItems: "center",
+                position: "relative",
+                overflow: "hidden",
+              }}>
+                {/* Subtle top gradient strip */}
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${activePack.gradientA}, ${activePack.gradientB})` }} />
 
-              <button onClick={() => setActivePackIdx((i) => (i - 1 + packs.length) % packs.length)}
-                style={{ position: "absolute", left: 10, zIndex: 2, width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.75)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                <ChevronLeft size={15} color="#64748b" />
-              </button>
+                {/* Glow inside frame */}
+                <div className="glow-pulse" style={{ position: "absolute", width: "80%", aspectRatio: "1", top: "10%", borderRadius: "50%", background: `radial-gradient(circle, ${activePack.glowColor} 0%, transparent 70%)`, pointerEvents: "none" }} />
 
-              <div key={activePack.id} className="pack-float" style={{ position: "relative", zIndex: 1 }}
-                onClick={goToDetail}>
-                <img src={activePack.packImage} alt={activePack.name} style={{ height: "min(200px, calc(100% - 8px))", width: "auto", objectFit: "contain", filter: "drop-shadow(0 16px 32px rgba(0,0,0,0.28))", display: "block", cursor: "pointer" }} />
+                {/* Arrows + pack image */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "center", position: "relative", zIndex: 1 }}>
+                  <button onClick={() => setActivePackIdx((i) => (i - 1 + packs.length) % packs.length)}
+                    style={{ width: 30, height: 30, borderRadius: "50%", border: "1.5px solid #e2e8f0", background: "rgba(255,255,255,0.9)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+                    <ChevronLeft size={14} color="#64748b" />
+                  </button>
+
+                  <div key={activePack.id} className="pack-float" style={{ cursor: "pointer" }} onClick={goToDetail}>
+                    <img src={activePack.packImage} alt={activePack.name}
+                      style={{ height: 180, width: "auto", objectFit: "contain", filter: "drop-shadow(0 12px 28px rgba(0,0,0,0.22))", display: "block" }} />
+                  </div>
+
+                  <button onClick={() => setActivePackIdx((i) => (i + 1) % packs.length)}
+                    style={{ width: 30, height: 30, borderRadius: "50%", border: "1.5px solid #e2e8f0", background: "rgba(255,255,255,0.9)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+                    <ChevronRight size={14} color="#64748b" />
+                  </button>
+                </div>
               </div>
-
-              <button onClick={() => setActivePackIdx((i) => (i + 1) % packs.length)}
-                style={{ position: "absolute", right: 10, zIndex: 2, width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.75)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                <ChevronRight size={15} color="#64748b" />
-              </button>
-            </div>
-
-            {/* Pack name + subtitle */}
-            <div style={{ textAlign: "center", padding: "6px 20px 8px", flexShrink: 0 }}>
-              <h2 style={{ fontFamily: "'Crimson Pro',Georgia,serif", fontSize: "1.7rem", fontWeight: 400, color: "#0f172a", margin: 0, letterSpacing: "-0.01em" }}>{activePack.name}</h2>
-              <p style={{ fontSize: 11, fontWeight: 500, color: activePack.accentColor, marginTop: 2, marginBottom: 0 }}>{activePack.subtitle}</p>
             </div>
 
             {/* Timer card */}
-            <div style={{ margin: "0 16px 10px", background: "white", borderRadius: 16, padding: "12px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05)", flexShrink: 0 }}>
+            <div style={{ margin: "14px 16px 10px", background: "white", borderRadius: 16, padding: "12px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                   <Clock size={12} color="#94a3b8" />
@@ -471,7 +456,7 @@ export default function PackSelection() {
             </div>
 
             {/* Open pack button */}
-            <div style={{ padding: "0 16px 12px", flexShrink: 0 }}>
+            <div style={{ padding: "0 16px 14px", flexShrink: 0 }}>
               <button className="open-btn" style={{ background: `linear-gradient(135deg, ${activePack.gradientA}, ${activePack.gradientB})` }} onClick={goToDetail}>
                 Open Pack
               </button>
@@ -482,7 +467,6 @@ export default function PackSelection() {
         {/* ══════════ DETAIL SCREEN ══════════ */}
         {navTab === "home" && screen === "detail" && (
           <div className="fade-in" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "linear-gradient(180deg,#0a0a18 0%,#0f0f24 60%,#1a0a2e 100%)" }}>
-            {/* Top bar */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "44px 20px 16px", flexShrink: 0 }}>
               <button onClick={goBack} style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <ChevronLeft size={15} color="rgba(255,255,255,0.8)" />
@@ -491,21 +475,18 @@ export default function PackSelection() {
               <div style={{ width: 34 }} />
             </div>
 
-            {/* Pack image */}
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", minHeight: 0 }}>
               <div className="glow-pulse" style={{ position: "absolute", width: "65%", aspectRatio: "1", borderRadius: "50%", background: `radial-gradient(circle, ${activePack.glowColor} 0%, transparent 70%)`, opacity: 0.8, pointerEvents: "none" }} />
               <div key={activePack.id} className="pack-enter pack-float" style={{ position: "relative", zIndex: 1 }}>
-                <img src={activePack.packImage} alt={activePack.name} style={{ height: "min(210px, calc(100% - 8px))", width: "auto", objectFit: "contain", filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.5))", display: "block" }} />
+                <img src={activePack.packImage} alt={activePack.name} style={{ height: "min(220px, calc(100% - 8px))", width: "auto", objectFit: "contain", filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.5))", display: "block" }} />
               </div>
             </div>
 
-            {/* Pack info */}
             <div style={{ textAlign: "center", padding: "8px 20px 16px", flexShrink: 0 }}>
               <h2 style={{ fontFamily: "'Crimson Pro',Georgia,serif", fontSize: "1.9rem", fontWeight: 400, color: "white", margin: 0 }}>{activePack.name}</h2>
               <p style={{ fontSize: 11, fontWeight: 500, color: activePack.accentColor, marginTop: 4, marginBottom: 0 }}>{activePack.subtitle}</p>
             </div>
 
-            {/* Buttons */}
             <div className="slide-up" style={{ padding: "0 16px 14px", display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
               <button className="open-btn" style={{ background: `linear-gradient(135deg, ${activePack.gradientA}, ${activePack.gradientB})` }} onClick={handleOpenPack}>
                 Open Pack
@@ -525,7 +506,6 @@ export default function PackSelection() {
         {/* ══════════ OPENING SCREEN ══════════ */}
         {navTab === "home" && screen === "opening" && (
           <div className="fade-in" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "linear-gradient(180deg,#0a0a18 0%,#0f0f24 60%,#1a0a2e 100%)", alignItems: "center" }}>
-            {/* Top bar */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "44px 20px 12px", flexShrink: 0 }}>
               <button onClick={goBack} style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <ChevronLeft size={15} color="rgba(255,255,255,0.8)" />
@@ -588,46 +568,60 @@ export default function PackSelection() {
           </div>
         )}
 
-        {/* ══════════ PLACEHOLDER PAGES ══════════ */}
+        {/* ══════════ COLLECTION PAGE ══════════ */}
         {navTab === "collection" && (
           <div className="fade-in" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ padding: "44px 20px 16px", flexShrink: 0 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#94a3b8", margin: 0 }}>Your cards</p>
+            <div style={{ padding: "46px 20px 8px", flexShrink: 0 }}>
+              <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "#94a3b8", margin: 0 }}>Your cards</p>
             </div>
-            <CollectionPage />
+            <PlaceholderPage
+              icon={<LayoutGrid size={30} color="#6366f1" />}
+              title="Collection"
+              desc="Your collected cards will appear here. Open packs to start building your collection."
+              bg="linear-gradient(135deg,#e0e7ff,#c7d2fe)"
+              iconColor="#6366f1"
+            />
           </div>
         )}
+
+        {/* ══════════ CHALLENGES PAGE ══════════ */}
         {navTab === "challenges" && (
           <div className="fade-in" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ padding: "44px 20px 16px", flexShrink: 0 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#94a3b8", margin: 0 }}>Active challenges</p>
+            <div style={{ padding: "46px 20px 8px", flexShrink: 0 }}>
+              <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "#94a3b8", margin: 0 }}>Active challenges</p>
             </div>
-            <ChallengesPage />
+            <PlaceholderPage
+              icon={<Trophy size={30} color="#d97706" />}
+              title="Challenges"
+              desc="Daily and weekly challenges will be listed here. Complete them to earn rare cards and rewards."
+              bg="linear-gradient(135deg,#fef3c7,#fde68a)"
+              iconColor="#d97706"
+            />
           </div>
         )}
+
+        {/* ══════════ MECHANICS PAGE ══════════ */}
         {navTab === "mechanics" && (
           <div className="fade-in" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ padding: "44px 20px 16px", flexShrink: 0 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#94a3b8", margin: 0 }}>How to play</p>
+            <div style={{ padding: "46px 20px 8px", flexShrink: 0 }}>
+              <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "#94a3b8", margin: 0 }}>How to play</p>
             </div>
-            <MechanicsPage />
-          </div>
-        )}
-        {navTab === "shop" && (
-          <div className="fade-in" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ padding: "44px 20px 16px", flexShrink: 0 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#94a3b8", margin: 0 }}>Store</p>
-            </div>
-            <ShopPage />
+            <PlaceholderPage
+              icon={<BookOpen size={30} color="#16a34a" />}
+              title="Game Mechanics"
+              desc="Rules, card interactions, and strategy guides will be explained here."
+              bg="linear-gradient(135deg,#dcfce7,#bbf7d0)"
+              iconColor="#16a34a"
+            />
           </div>
         )}
       </div>
 
-      {/* ══════════ BOTTOM NAV ══════════ */}
+      {/* ══════════ BOTTOM NAV — 4 items, no Shop ══════════ */}
       {!isHomeSub && (
         <nav style={{
           height: NAV_H, flexShrink: 0,
-          background: "rgba(255,255,255,0.94)",
+          background: "rgba(255,255,255,0.96)",
           backdropFilter: "blur(16px)",
           borderTop: "1px solid rgba(0,0,0,0.07)",
           display: "flex", alignItems: "stretch",
@@ -640,14 +634,18 @@ export default function PackSelection() {
                 onClick={() => handleNavTab(id)}
                 style={{
                   flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
-                  justifyContent: "center", gap: 2, border: "none", background: "none",
-                  cursor: "pointer", padding: "6px 2px 4px",
-                  fontSize: 8, fontWeight: 700, letterSpacing: "0.06em",
+                  justifyContent: "center", gap: 3, border: "none", background: "none",
+                  cursor: "pointer", padding: "6px 2px 6px",
+                  fontSize: 9, fontWeight: 700, letterSpacing: "0.07em",
                   textTransform: "uppercase",
-                  color: active ? "#6366f1" : "#94a3b8",
+                  color: active ? "#7c3aed" : "#94a3b8",
                   transition: "color 0.15s ease",
+                  position: "relative",
                 }}
               >
+                {active && (
+                  <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 28, height: 3, borderRadius: "0 0 3px 3px", background: "#7c3aed" }} />
+                )}
                 {icon(active)}
                 {label}
               </button>
