@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Atom, Brain, Palette, Clock, Package, ChevronLeft, Shuffle, Eye, X } from "lucide-react";
 
 type PackType = "science" | "philosophy" | "art";
@@ -9,7 +9,7 @@ interface CardData {
   name: string;
   rarity: "Common" | "Uncommon" | "Rare" | "Ultra Rare";
   description: string;
-  emoji: string;
+  image: string;
 }
 
 interface Pack {
@@ -20,14 +20,40 @@ interface Pack {
   glowColor: string;
   gradientA: string;
   gradientB: string;
-  // original simple icon circle styles (no glow)
   iconBg: string;
   iconBorder: string;
   iconColor: string;
-  typeBg: string;
-  typeColor: string;
-  cards: CardData[];
+  cards: CardData[]; // pool to draw from — 3 random picked per open
 }
+
+// ─── Card pool per pack ──────────────────────────────────────────────────────
+// Swap out images/names/rarities here to manage each pack's card pool.
+
+const SCIENCE_CARDS: CardData[] = [
+  { name: "The Library",       rarity: "Rare",       description: "Draw 3 cards and keep one.",                          image: "/card1.png" },
+  { name: "DNA",               rarity: "Ultra Rare", description: "Copy an Ally's effects until end of turn.",           image: "/card2.png" },
+  { name: "Schrödinger's Cat", rarity: "Uncommon",   description: "Both active & inactive. Leaving play: draw 1, discard 1.", image: "/card3.png" },
+  { name: "Creation Touch",    rarity: "Rare",       description: "Activate a dormant ability on any card.",             image: "/card4.png" },
+  { name: "The Murmuration",   rarity: "Common",     description: "Split any card's power across two targets.",          image: "/card5.png" },
+];
+
+const PHILOSOPHY_CARDS: CardData[] = [
+  { name: "Cogito Ergo Sum",   rarity: "Ultra Rare", description: "Resurrect any eliminated card.",                      image: "/card3.png" },
+  { name: "Socratic Method",   rarity: "Rare",       description: "Ask three questions — opponent reveals their strategy.", image: "/card4.png" },
+  { name: "The Dialectic",     rarity: "Uncommon",   description: "Merge two opposing cards into a synthesis.",          image: "/card1.png" },
+  { name: "Kant's Imperative", rarity: "Common",     description: "Neutralize all illegal moves for one turn.",          image: "/card5.png" },
+  { name: "Plato's Cave",      rarity: "Rare",       description: "Reveal all hidden card effects on the board.",        image: "/card2.png" },
+];
+
+const ART_CARDS: CardData[] = [
+  { name: "Warhol's Silkscreen", rarity: "Ultra Rare", description: "Duplicate any card four times.",                   image: "/card2.png" },
+  { name: "Dali's Clock",        rarity: "Rare",       description: "Bend time — skip to any point in your turn order.", image: "/card1.png" },
+  { name: "Rothko's Field",      rarity: "Uncommon",   description: "All cards gain +2 presence for one turn.",          image: "/card5.png" },
+  { name: "Pollock's Drip",      rarity: "Common",     description: "Random buff applied to random cards.",              image: "/card3.png" },
+  { name: "Basquiat's Crown",    rarity: "Ultra Rare", description: "Crown a card — it becomes immune to elimination.",  image: "/card4.png" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const packs: Pack[] = [
   {
@@ -41,18 +67,7 @@ const packs: Pack[] = [
     iconBg: "bg-blue-50",
     iconBorder: "border-blue-200",
     iconColor: "text-blue-600",
-    typeBg: "rgba(219,234,254,0.85)",
-    typeColor: "#1d4ed8",
-    cards: [
-      { name: "Newton's Apple", rarity: "Rare", description: "The moment gravity revealed itself. Gain momentum from any falling action.", emoji: "🍎" },
-      { name: "Copernican Shift", rarity: "Ultra Rare", description: "Reposition your entire field. All cards rotate to new positions.", emoji: "🌍" },
-      { name: "Alchemical Flask", rarity: "Common", description: "A bubbling reagent of unknown origin. Transform one element into another.", emoji: "⚗️" },
-      { name: "Telescope Gaze", rarity: "Uncommon", description: "See cards hidden in the opponent's hand for one turn.", emoji: "🔭" },
-      { name: "Periodic Table", rarity: "Rare", description: "Summon any element by name. 118 possible outcomes.", emoji: "🧪" },
-      { name: "Archimedes' Lever", rarity: "Common", description: "Move the world with enough fulcrum. Double any force card.", emoji: "⚖️" },
-      { name: "Electrostatic Charge", rarity: "Uncommon", description: "Shock adjacent cards. Stuns for 1 turn.", emoji: "⚡" },
-      { name: "Darwin's Notebook", rarity: "Ultra Rare", description: "Evolve any card into a stronger variant once per game.", emoji: "📓" },
-    ],
+    cards: SCIENCE_CARDS,
   },
   {
     id: "philosophy",
@@ -65,18 +80,7 @@ const packs: Pack[] = [
     iconBg: "bg-violet-50",
     iconBorder: "border-violet-200",
     iconColor: "text-violet-600",
-    typeBg: "rgba(237,233,254,0.85)",
-    typeColor: "#6d28d9",
-    cards: [
-      { name: "Cogito Ergo Sum", rarity: "Ultra Rare", description: "I think, therefore I am. Resurrect any eliminated card.", emoji: "💭" },
-      { name: "Socratic Method", rarity: "Rare", description: "Ask three questions. Opponent must reveal their strategy.", emoji: "🏛️" },
-      { name: "The Dialectic", rarity: "Uncommon", description: "Thesis meets antithesis. Merge two opposing cards into a synthesis.", emoji: "🔄" },
-      { name: "Kant's Imperative", rarity: "Common", description: "Act only by rules you'd make universal. Neutralize all illegal moves.", emoji: "📜" },
-      { name: "Nihil Obstat", rarity: "Common", description: "Nothing stands in the way. Clear all obstacles from your path.", emoji: "🌑" },
-      { name: "Plato's Cave", rarity: "Rare", description: "See through illusions. Reveal all hidden card effects.", emoji: "🕯️" },
-      { name: "Stoic Resolve", rarity: "Uncommon", description: "Ignore all status effects for 2 turns.", emoji: "🪨" },
-      { name: "Epicurean Feast", rarity: "Common", description: "Restore balance. Heal all your cards by a small amount.", emoji: "🍇" },
-    ],
+    cards: PHILOSOPHY_CARDS,
   },
   {
     id: "art",
@@ -89,26 +93,17 @@ const packs: Pack[] = [
     iconBg: "bg-orange-50",
     iconBorder: "border-orange-200",
     iconColor: "text-orange-600",
-    typeBg: "rgba(255,237,213,0.85)",
-    typeColor: "#c2410c",
-    cards: [
-      { name: "Warhol's Silkscreen", rarity: "Ultra Rare", description: "Duplicate any card four times. Pop art proliferates.", emoji: "🖨️" },
-      { name: "Dali's Clock", rarity: "Rare", description: "Bend time. Skip to any point in your turn order.", emoji: "⏰" },
-      { name: "Rothko's Field", rarity: "Uncommon", description: "Flood the board with color. All cards gain +2 presence.", emoji: "🎨" },
-      { name: "Duchamp's Readymade", rarity: "Common", description: "Transform any ordinary object into art. Reassign any card's type.", emoji: "🚿" },
-      { name: "Picasso's Eye", rarity: "Rare", description: "See all angles simultaneously. Preview opponent's next 3 moves.", emoji: "👁️" },
-      { name: "Pollock's Drip", rarity: "Common", description: "Scatter energy randomly. Random buff applied to random cards.", emoji: "🖌️" },
-      { name: "Monet's Garden", rarity: "Uncommon", description: "Soft focus. Reduce all opponents' accuracy by 20%.", emoji: "🌸" },
-      { name: "Basquiat's Crown", rarity: "Ultra Rare", description: "Crown any card as king. That card becomes immune to elimination.", emoji: "👑" },
-    ],
+    cards: ART_CARDS,
   },
 ];
 
-const RARITY_COLORS: Record<CardData["rarity"], { bg: string; text: string; dot: string; border: string }> = {
-  "Common":     { bg: "#f8fafc", text: "#64748b", dot: "#94a3b8", border: "#e2e8f0" },
-  "Uncommon":   { bg: "#f0fdf4", text: "#166534", dot: "#22c55e", border: "#bbf7d0" },
-  "Rare":       { bg: "#eff6ff", text: "#1e40af", dot: "#3b82f6", border: "#bfdbfe" },
-  "Ultra Rare": { bg: "#faf5ff", text: "#5b21b6", dot: "#8b5cf6", border: "#ddd6fe" },
+const CARDS_PER_PACK = 3;
+
+const RARITY_COLORS: Record<CardData["rarity"], { dot: string; text: string; border: string }> = {
+  "Common":     { dot: "#94a3b8", text: "#64748b", border: "#e2e8f0" },
+  "Uncommon":   { dot: "#22c55e", text: "#166534", border: "#bbf7d0" },
+  "Rare":       { dot: "#3b82f6", text: "#1e40af", border: "#bfdbfe" },
+  "Ultra Rare": { dot: "#8b5cf6", text: "#5b21b6", border: "#ddd6fe" },
 };
 
 const CARDS_WIDTH = 3 * 95 + 2 * 12;
@@ -123,6 +118,11 @@ function formatTime(s: number) {
   return `${String(m).padStart(2, "0")} min ${String(sec).padStart(2, "0")} sec`;
 }
 
+function pickRandom<T>(arr: T[], n: number): T[] {
+  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, n);
+}
+
 function PackIcon({ id, size = 28 }: { id: PackType; size?: number }) {
   if (id === "science") return <Atom size={size} />;
   if (id === "philosophy") return <Brain size={size} />;
@@ -134,6 +134,15 @@ export default function PackSelection() {
   const [previewPack, setPreviewPack] = useState<Pack | null>(null);
   const [availablePacks, setAvailablePacks] = useState(1);
   const [secondsRemaining, setSecondsRemaining] = useState(Math.floor(REGEN_SECONDS / 2));
+  const [isOpening, setIsOpening] = useState(false);
+  const [openedCards, setOpenedCards] = useState<CardData[]>([]);
+  const [revealedCount, setRevealedCount] = useState(0);
+  const [expandedCard, setExpandedCard] = useState<CardData | null>(null);
+
+  // Swipe state
+  const dragStartX = useRef<number | null>(null);
+  const dragCurrentX = useRef<number>(0);
+  const [swipeProgress, setSwipeProgress] = useState(0);
 
   useEffect(() => {
     if (availablePacks >= MAX_PACKS) return;
@@ -146,17 +155,107 @@ export default function PackSelection() {
     return () => clearInterval(interval);
   }, [availablePacks]);
 
-  const progress = 1 - secondsRemaining / REGEN_SECONDS;
+  const timerProgress = 1 - secondsRemaining / REGEN_SECONDS;
 
   function handleSelectPack(pack: Pack) { setSelectedPack(pack); }
-  function handleBack() { setSelectedPack(null); }
+
+  function handleBack() {
+    setSelectedPack(null);
+    setIsOpening(false);
+    setOpenedCards([]);
+    setRevealedCount(0);
+    setSwipeProgress(0);
+  }
+
+  function handleCollect() {
+    // Consume one pack, return to home
+    setAvailablePacks(p => Math.max(0, p - 1));
+    setSelectedPack(null);
+    setIsOpening(false);
+    setOpenedCards([]);
+    setRevealedCount(0);
+    setSwipeProgress(0);
+  }
+
   function handleSwitch() {
     if (!selectedPack) return;
     const idx = packs.findIndex((p) => p.id === selectedPack.id);
     setSelectedPack(packs[(idx + 1) % packs.length]);
+    setIsOpening(false); setOpenedCards([]); setRevealedCount(0); setSwipeProgress(0);
   }
+
   function openPreview() { setPreviewPack(selectedPack); }
   function closePreview() { setPreviewPack(null); }
+
+  function handleOpenPack() {
+    setIsOpening(true);
+    setOpenedCards([]);
+    setRevealedCount(0);
+    setSwipeProgress(0);
+  }
+
+  // ── Swipe handlers ──
+  function onPointerDown(e: React.PointerEvent) {
+    dragStartX.current = e.clientX;
+    dragCurrentX.current = e.clientX;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }
+  function onPointerMove(e: React.PointerEvent) {
+    if (dragStartX.current === null) return;
+    const delta = e.clientX - dragStartX.current;
+    setSwipeProgress(Math.min(Math.max(delta / 180, 0), 1));
+    dragCurrentX.current = e.clientX;
+  }
+  function onPointerUp() {
+    if (dragStartX.current === null) return;
+    const delta = dragCurrentX.current - (dragStartX.current ?? 0);
+    dragStartX.current = null;
+    if (delta > 100) {
+      setSwipeProgress(1);
+      setTimeout(() => triggerReveal(), 280);
+    } else {
+      setSwipeProgress(0);
+    }
+  }
+
+  function triggerReveal() {
+    if (!selectedPack) return;
+    const drawn = pickRandom(selectedPack.cards, CARDS_PER_PACK);
+    setOpenedCards(drawn);
+    setRevealedCount(0);
+    for (let i = 0; i < CARDS_PER_PACK; i++) {
+      setTimeout(() => setRevealedCount(n => n + 1), 350 + i * 230);
+    }
+  }
+
+  const allRevealed = openedCards.length > 0 && revealedCount >= CARDS_PER_PACK;
+
+  // ─── Timer pill (shared) ──────────────────────────────────────────────────
+  const TimerPill = () => (
+    <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)]">
+      <div className="flex items-center gap-1">
+        <Package size={11} className="text-slate-400" />
+        <span className="text-[10px] font-semibold text-slate-600">
+          {availablePacks}<span className="font-normal text-slate-400">/{MAX_PACKS}</span>
+        </span>
+      </div>
+      <div className="h-3 w-px bg-slate-200" />
+      <div className="flex items-center gap-1.5">
+        <Clock size={11} className="text-slate-400" />
+        {availablePacks >= MAX_PACKS
+          ? <span className="text-[10px] font-medium text-slate-500">Full</span>
+          : <span className="text-[10px] font-medium tabular-nums text-slate-500">{formatTime(secondsRemaining)}</span>
+        }
+      </div>
+      <div className="h-3 w-px bg-slate-200" />
+      <div className="h-1 w-16 overflow-hidden rounded-full bg-slate-100">
+        {availablePacks >= MAX_PACKS
+          ? <div className="timer-bar-full h-full w-full rounded-full" />
+          : <div className="timer-bar h-full rounded-full transition-[width] duration-1000 ease-linear" style={{ width: `${timerProgress * 100}%` }} />
+        }
+      </div>
+    </div>
+  );
 
   return (
     <main className="relative flex min-h-dvh w-full flex-col items-center justify-center overflow-hidden bg-white">
@@ -181,64 +280,80 @@ export default function PackSelection() {
           background-size: 300% 100%;
           animation: shimmer 3s linear infinite;
         }
+
         @keyframes pack-enter {
           from { opacity: 0; transform: scale(0.88); }
           to   { opacity: 1; transform: scale(1); }
         }
         .pack-enter { animation: pack-enter 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
         @keyframes slide-up {
           from { opacity: 0; transform: translateY(18px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         .slide-up { animation: slide-up 0.35s ease forwards; }
+
         @keyframes fade-in {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
         .fade-in { animation: fade-in 0.25s ease forwards; }
 
-        /* ── streak: fixed, covers full height from top ── */
         .detail-streak {
           position: fixed;
-          /* extend well beyond viewport top and bottom so rotation never clips */
-          top: -60%;
-          bottom: -60%;
-          left: -30%;
-          right: -30%;
+          top: -60%; bottom: -60%;
+          left: -30%; right: -30%;
           transform: rotate(-14deg);
           pointer-events: none;
           z-index: 0;
-          opacity: 0.16;
-        }
-        .detail-streak-inner {
-          width: 100%;
-          height: 100%;
+          opacity: 0.15;
         }
 
-        /* card grid items */
-        .card-thumb {
-          border-radius: 14px;
-          background: white;
-          border: 1.5px solid #e2e8f0;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          cursor: default;
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        /* Swipe glow */
+        @keyframes swipe-glow {
+          0%   { left: -60%; opacity: 0; }
+          15%  { opacity: 1; }
+          85%  { opacity: 0.85; }
+          100% { left: 110%; opacity: 0; }
         }
-        .card-thumb:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        .swipe-glow-streak {
+          position: absolute;
+          top: 0; bottom: 0;
+          width: 50%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85) 40%, rgba(255,255,255,1) 55%, rgba(255,255,255,0.85) 70%, transparent);
+          animation: swipe-glow 2s ease-in-out infinite;
+          pointer-events: none;
+          border-radius: 100px;
         }
 
-        /* modal */
+        /* Card reveal */
+        @keyframes card-pop {
+          0%   { opacity: 0; transform: translateY(50px) scale(0.82) rotateY(-18deg); }
+          65%  { transform: translateY(-6px) scale(1.03) rotateY(3deg); }
+          100% { opacity: 1; transform: translateY(0) scale(1) rotateY(0deg); }
+        }
+        .card-reveal { animation: card-pop 0.52s cubic-bezier(0.34,1.4,0.64,1) both; }
+
+        /* Expanded card */
+        @keyframes card-expand {
+          from { opacity: 0; transform: scale(0.72); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        .card-expand-img {
+          animation: card-expand 0.32s cubic-bezier(0.34,1.4,0.64,1) both;
+          max-width: min(82vw, 320px);
+          border-radius: 18px;
+          box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+        }
+
+        /* Modal */
         @keyframes modal-in {
-          from { opacity: 0; transform: translateY(20px) scale(0.97); }
+          from { opacity: 0; transform: translateY(22px) scale(0.97); }
           to   { opacity: 1; transform: none; }
         }
         .modal-backdrop {
           position: fixed; inset: 0; z-index: 50;
-          background: rgba(0,0,0,0.4);
+          background: rgba(0,0,0,0.38);
           backdrop-filter: blur(6px);
           display: flex; align-items: flex-end; justify-content: center;
         }
@@ -253,30 +368,19 @@ export default function PackSelection() {
         }
       `}</style>
 
-      {/* ══════════ SELECTION VIEW ══════════ */}
+      {/* ══════════ HOME / PACK SELECTION ══════════ */}
       {!selectedPack && (
         <div className="flex w-full flex-col items-center gap-10 px-10 py-16">
 
-          {/* Title — single font, Crimson Pro */}
+          {/* Title */}
           <div className="flex flex-col items-center gap-1.5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-              Choose your booster
-            </p>
-            <h1
-              style={{
-                fontFamily: "'Crimson Pro', Georgia, serif",
-                fontSize: "2.4rem",
-                fontWeight: 400,
-                color: "#0f172a",
-                letterSpacing: "-0.01em",
-                lineHeight: 1,
-              }}
-            >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Choose your booster</p>
+            <h1 style={{ fontFamily: "'Crimson Pro', Georgia, serif", fontSize: "2.4rem", fontWeight: 400, color: "#0f172a", letterSpacing: "-0.01em", lineHeight: 1 }}>
               Dezcartes
             </h1>
           </div>
 
-          {/* Pack cards — exactly as original */}
+          {/* Pack cards */}
           <div className="flex w-full items-center justify-center gap-3">
             {packs.map((pack) => (
               <button
@@ -285,173 +389,249 @@ export default function PackSelection() {
                 style={{ width: 95, height: 148 }}
                 className="relative flex shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)] transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_2px_6px_rgba(0,0,0,0.10),0_6px_24px_rgba(0,0,0,0.09)] active:scale-95"
               >
-                <div className={`h-[5px] w-full shrink-0 bg-gradient-to-r ${
-                  pack.id === "science" ? "from-blue-100 to-blue-50" :
-                  pack.id === "philosophy" ? "from-violet-100 to-violet-50" :
-                  "from-orange-100 to-orange-50"
-                }`} />
+                <div
+                  className="h-[5px] w-full shrink-0"
+                  style={{ background: `linear-gradient(90deg, ${pack.gradientA}, ${pack.gradientB})`, opacity: 0.35 }}
+                />
                 <div className="flex flex-1 flex-col items-center justify-between px-2 py-4">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${pack.iconBg} ${pack.iconBorder} ${pack.iconColor}`}>
                     {pack.icon}
                   </div>
                   <div className="flex h-9 items-center justify-center">
-                    <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-wide text-slate-800 sm:text-[10px]">
-                      {pack.name}
-                    </span>
+                    <span className="text-center text-[9px] font-semibold uppercase leading-tight tracking-wide text-slate-800">{pack.name}</span>
                   </div>
                   <div className="w-8 border-t border-slate-100" />
-                  <span style={{ fontFamily: "'Crimson Pro', Georgia, serif" }} className="text-[11px] font-light italic text-slate-400">
-                    {pack.type}
-                  </span>
+                  <span style={{ fontFamily: "'Crimson Pro', Georgia, serif" }} className="text-[11px] font-light italic text-slate-400">{pack.type}</span>
                 </div>
               </button>
             ))}
           </div>
 
-          {/* Timer card — exactly as original */}
+          {/* Timer */}
           <div style={{ width: CARDS_WIDTH }} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)]">
             <div className="mb-2.5 flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Clock size={11} className="text-slate-400" />
-                {availablePacks >= MAX_PACKS ? (
-                  <span className="text-[10px] font-medium text-slate-500">Packs full</span>
-                ) : (
-                  <span className="text-[10px] font-medium tabular-nums text-slate-500">
-                    {formatTime(secondsRemaining)}
-                  </span>
-                )}
+                {availablePacks >= MAX_PACKS
+                  ? <span className="text-[10px] font-medium text-slate-500">Packs full</span>
+                  : <span className="text-[10px] font-medium tabular-nums text-slate-500">{formatTime(secondsRemaining)}</span>
+                }
               </div>
               <div className="flex items-center gap-1">
                 <Package size={11} className="text-slate-400" />
-                <span className="text-[10px] font-semibold text-slate-600">
-                  {availablePacks}
-                  <span className="font-normal text-slate-400">/{MAX_PACKS}</span>
-                </span>
+                <span className="text-[10px] font-semibold text-slate-600">{availablePacks}<span className="font-normal text-slate-400">/{MAX_PACKS}</span></span>
               </div>
             </div>
             <div className="h-1 w-full overflow-hidden rounded-full bg-slate-100">
-              {availablePacks >= MAX_PACKS ? (
-                <div className="timer-bar-full h-full w-full rounded-full" />
-              ) : (
-                <div
-                  className="timer-bar h-full rounded-full transition-[width] duration-1000 ease-linear"
-                  style={{ width: `${progress * 100}%` }}
-                />
-              )}
+              {availablePacks >= MAX_PACKS
+                ? <div className="timer-bar-full h-full w-full rounded-full" />
+                : <div className="timer-bar h-full rounded-full transition-[width] duration-1000 ease-linear" style={{ width: `${timerProgress * 100}%` }} />
+              }
             </div>
           </div>
         </div>
       )}
 
-      {/* ══════════ DETAIL VIEW ══════════ */}
-      {selectedPack && (
+      {/* ══════════ PACK DETAIL VIEW ══════════ */}
+      {selectedPack && !isOpening && (
         <div className="fade-in flex min-h-dvh w-full flex-col">
 
-          {/* Angled streak — fixed, full-height, pack color */}
+          {/* Streak bg */}
           <div className="detail-streak">
-            <div
-              className="detail-streak-inner"
-              style={{
-                background: `linear-gradient(90deg, transparent 10%, ${selectedPack.gradientA} 40%, ${selectedPack.gradientB} 60%, transparent 90%)`,
-              }}
-            />
+            <div style={{ width: "100%", height: "100%", background: `linear-gradient(90deg, transparent 10%, ${selectedPack.gradientA} 40%, ${selectedPack.gradientB} 60%, transparent 90%)` }} />
           </div>
 
-          {/* Top bar */}
+          {/* Top timer pill */}
           <div className="relative z-10 flex items-center justify-center px-6 pt-12 pb-4">
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)]">
-              <div className="flex items-center gap-1">
-                <Package size={11} className="text-slate-400" />
-                <span className="text-[10px] font-semibold text-slate-600">
-                  {availablePacks}
-                  <span className="font-normal text-slate-400">/{MAX_PACKS}</span>
-                </span>
-              </div>
-              <div className="h-3 w-px bg-slate-200" />
-              <div className="flex items-center gap-1.5">
-                <Clock size={11} className="text-slate-400" />
-                {availablePacks >= MAX_PACKS ? (
-                  <span className="text-[10px] font-medium text-slate-500">Full</span>
-                ) : (
-                  <span className="text-[10px] font-medium tabular-nums text-slate-500">
-                    {formatTime(secondsRemaining)}
-                  </span>
-                )}
-              </div>
-              <div className="h-3 w-px bg-slate-200" />
-              <div className="h-1 w-16 overflow-hidden rounded-full bg-slate-100">
-                {availablePacks >= MAX_PACKS ? (
-                  <div className="timer-bar-full h-full w-full rounded-full" />
-                ) : (
-                  <div
-                    className="timer-bar h-full rounded-full transition-[width] duration-1000 ease-linear"
-                    style={{ width: `${progress * 100}%` }}
-                  />
-                )}
-              </div>
-            </div>
+            <TimerPill />
           </div>
 
-          {/* Pack display */}
-          <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-4 px-10">
+          {/* Pack art — centred, fills flex-1 */}
+          <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
             <div
               key={selectedPack.id}
               className="pack-enter flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_24px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.06)]"
               style={{ width: 200, height: 280 }}
             >
-              <div
-                className="h-[6px] w-full shrink-0"
-                style={{ background: `linear-gradient(90deg, ${selectedPack.gradientA}, ${selectedPack.gradientB})` }}
-              />
+              <div className="h-[6px] w-full shrink-0" style={{ background: `linear-gradient(90deg, ${selectedPack.gradientA}, ${selectedPack.gradientB})` }} />
               <div className="flex flex-1 flex-col items-center justify-between px-4 py-6">
-                {/* Icon — original plain circle, no glow */}
                 <div className={`flex h-24 w-24 items-center justify-center rounded-full border-2 ${selectedPack.iconBg} ${selectedPack.iconBorder} ${selectedPack.iconColor}`}>
-                  <div className="scale-[2.2] transform">
-                    <PackIcon id={selectedPack.id} size={28} />
-                  </div>
+                  <div className="scale-[2.2] transform"><PackIcon id={selectedPack.id} size={28} /></div>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                  <span className="text-center text-[11px] font-semibold uppercase leading-snug tracking-wider text-slate-800">
-                    {selectedPack.name}
-                  </span>
+                  <span className="text-center text-[11px] font-semibold uppercase leading-snug tracking-wider text-slate-800">{selectedPack.name}</span>
                   <div className="w-10 border-t border-slate-100" />
-                  <span style={{ fontFamily: "'Crimson Pro', Georgia, serif" }} className="text-sm font-light italic text-slate-400">
-                    {selectedPack.type}
-                  </span>
+                  <span style={{ fontFamily: "'Crimson Pro', Georgia, serif" }} className="text-sm font-light italic text-slate-400">{selectedPack.type}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom actions */}
-          <div className="slide-up relative z-10 flex flex-col items-center gap-3 px-10 pb-14 pt-4">
-            {/* Back / Open / Switch row */}
-            <div className="flex w-full items-center justify-between">
+          {/* ── Bottom buttons: Open · Back · Switch · Preview (stacked) ── */}
+          <div className="slide-up relative z-10 flex flex-col items-center gap-2 px-10 pb-14 pt-4">
+
+            {/* Open — primary, full width */}
+            <button
+              onClick={handleOpenPack}
+              className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-semibold text-white shadow-[0_2px_12px_rgba(0,0,0,0.18)] transition-all active:scale-95"
+              style={{ background: `linear-gradient(135deg, ${selectedPack.gradientA}, ${selectedPack.gradientB})` }}
+            >
+              Open Pack
+            </button>
+
+            {/* Back + Switch — side by side */}
+            <div className="flex w-full items-center gap-2">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-medium text-slate-500 shadow-[0_1px_3px_rgba(0,0,0,0.07)] transition-all active:scale-95"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-medium text-slate-500 shadow-[0_1px_3px_rgba(0,0,0,0.07)] transition-all active:scale-95"
               >
-                <ChevronLeft size={15} />
-                Back
+                <ChevronLeft size={14} />Back
               </button>
-
               <button
                 onClick={handleSwitch}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-medium text-slate-500 shadow-[0_1px_3px_rgba(0,0,0,0.07)] transition-all active:scale-95"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-medium text-slate-500 shadow-[0_1px_3px_rgba(0,0,0,0.07)] transition-all active:scale-95"
               >
-                <Shuffle size={13} />
-                Switch pack
+                <Shuffle size={13} />Switch pack
               </button>
             </div>
 
-            {/* Preview cards button — full width, below */}
+            {/* Preview — full width */}
             <button
               onClick={openPreview}
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-medium text-slate-500 shadow-[0_1px_3px_rgba(0,0,0,0.07)] transition-all active:scale-95"
             >
-              <Eye size={13} />
-              Preview cards in this pack
+              <Eye size={13} />Preview cards in this pack
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════ PACK OPENING SCREEN ══════════ */}
+      {selectedPack && isOpening && (
+        <div className="fade-in flex min-h-dvh w-full flex-col items-center justify-between pb-14 pt-12">
+
+          {/* Streak bg */}
+          <div className="detail-streak">
+            <div style={{ width: "100%", height: "100%", background: `linear-gradient(90deg, transparent 10%, ${selectedPack.gradientA} 40%, ${selectedPack.gradientB} 60%, transparent 90%)` }} />
+          </div>
+
+          {openedCards.length === 0 ? (
+            /* ── Pre-reveal: pack with swipe line ── */
+            <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
+              <div
+                className="pack-enter flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_40px_rgba(0,0,0,0.16),0_2px_6px_rgba(0,0,0,0.08)]"
+                style={{ width: 220, height: 306 }}
+              >
+                {/* ── Swipe line just below the top ── */}
+                <div
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    height: 34,
+                    flexShrink: 0,
+                    background: `linear-gradient(90deg, ${selectedPack.gradientA}, ${selectedPack.gradientB})`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "grab",
+                    userSelect: "none",
+                    touchAction: "none",
+                    overflow: "hidden",
+                  }}
+                  onPointerDown={onPointerDown}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={onPointerUp}
+                  onPointerCancel={onPointerUp}
+                >
+                  {/* Track */}
+                  <div style={{ position: "absolute", left: 24, right: 24, height: 3, borderRadius: 100, background: "rgba(255,255,255,0.25)", overflow: "hidden" }}>
+                    {swipeProgress < 0.08 && <div className="swipe-glow-streak" />}
+                    <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${swipeProgress * 100}%`, background: "rgba(255,255,255,0.9)", borderRadius: 100, transition: "width 0.08s ease" }} />
+                  </div>
+                  {swipeProgress < 0.04 && (
+                    <span style={{ position: "relative", zIndex: 2, fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", pointerEvents: "none", whiteSpace: "nowrap" }}>
+                      ← swipe to open →
+                    </span>
+                  )}
+                </div>
+
+                {/* Pack art */}
+                <div className="flex flex-1 flex-col items-center justify-between px-4 py-5">
+                  <div className={`flex h-24 w-24 items-center justify-center rounded-full border-2 ${selectedPack.iconBg} ${selectedPack.iconBorder} ${selectedPack.iconColor}`}>
+                    <div className="scale-[2.2] transform"><PackIcon id={selectedPack.id} size={28} /></div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-center text-[11px] font-semibold uppercase leading-snug tracking-wider text-slate-800">{selectedPack.name}</span>
+                    <div className="w-10 border-t border-slate-100" />
+                    <span style={{ fontFamily: "'Crimson Pro', Georgia, serif" }} className="text-sm font-light italic text-slate-400">{selectedPack.type}</span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="relative z-10 mt-5 text-[11px] font-medium text-slate-400">Drag the line at the top to open</p>
+            </div>
+          ) : (
+            /* ── Cards revealed ── */
+            <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-6 w-full">
+              <p style={{ fontFamily: "'Crimson Pro', Georgia, serif", fontSize: "1.5rem", fontWeight: 400, color: "#0f172a", letterSpacing: "-0.01em" }}>
+                Your cards
+              </p>
+
+              {/* 3-card row, centered */}
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-end", justifyContent: "center", padding: "0 20px", width: "100%" }}>
+                {openedCards.map((card, i) => (
+                  i < revealedCount ? (
+                    <div
+                      key={i}
+                      className="card-reveal"
+                      style={{ flex: "0 0 auto", width: 105, borderRadius: 14, overflow: "hidden", background: "white", boxShadow: "0 6px 28px rgba(0,0,0,0.18)", cursor: "pointer", transition: "transform 0.15s ease" }}
+                      onClick={() => setExpandedCard(card)}
+                      onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.05)")}
+                      onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+                    >
+                      <img
+                        src={card.image}
+                        alt={card.name}
+                        style={{ width: "100%", display: "block", aspectRatio: "2/3", objectFit: "cover" }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      key={i}
+                      style={{ flex: "0 0 auto", width: 105, borderRadius: 14, overflow: "hidden", background: "#f1f5f9", boxShadow: "0 3px 12px rgba(0,0,0,0.08)" }}
+                    >
+                      <div style={{ width: "100%", aspectRatio: "2/3", background: "linear-gradient(135deg, #e2e8f0, #f8fafc)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#dde3ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#94a3b8" }}>?</div>
+                      </div>
+                    </div>
+                  )
+                ))}
+              </div>
+
+              {allRevealed && (
+                <p className="fade-in text-[11px] text-slate-400 font-medium">Tap any card to enlarge</p>
+              )}
+            </div>
+          )}
+
+          {/* Bottom — Collect (only after all revealed), else just a subtle back */}
+          <div className="slide-up relative z-10 flex w-full flex-col items-center gap-2 px-10">
+            {openedCards.length > 0 && allRevealed ? (
+              <button
+                onClick={handleCollect}
+                className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-[13px] font-semibold text-white shadow-[0_2px_12px_rgba(0,0,0,0.18)] transition-all active:scale-95"
+                style={{ background: `linear-gradient(135deg, ${selectedPack!.gradientA}, ${selectedPack!.gradientB})` }}
+              >
+                Collect cards
+              </button>
+            ) : (
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-[12px] font-medium text-slate-400 shadow-[0_1px_3px_rgba(0,0,0,0.07)] transition-all active:scale-95"
+              >
+                <ChevronLeft size={14} />Back
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -461,79 +641,55 @@ export default function PackSelection() {
         <div className="modal-backdrop" onClick={closePreview}>
           <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
 
-            {/* Sheet header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
               <div>
-                <h2
-                  style={{ fontFamily: "'Crimson Pro', Georgia, serif", fontSize: "1.25rem", fontWeight: 400, color: "#0f172a", letterSpacing: "-0.01em" }}
-                >
-                  {previewPack.name}
-                </h2>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 mt-0.5">
-                  {previewPack.cards.length} cards in this set
-                </p>
+                <h2 style={{ fontFamily: "'Crimson Pro', Georgia, serif", fontSize: "1.25rem", fontWeight: 400, color: "#0f172a", letterSpacing: "-0.01em" }}>{previewPack.name}</h2>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 mt-0.5">{previewPack.cards.length} cards in this set</p>
               </div>
-              <button
-                onClick={closePreview}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-all hover:bg-slate-100"
-              >
+              <button onClick={closePreview} className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-all hover:bg-slate-100">
                 <X size={14} />
               </button>
             </div>
 
-            {/* Pack color bar */}
-            <div
-              className="h-[3px] w-full"
-              style={{ background: `linear-gradient(90deg, ${previewPack.gradientA}, ${previewPack.gradientB})` }}
-            />
+            <div className="h-[3px] w-full" style={{ background: `linear-gradient(90deg, ${previewPack.gradientA}, ${previewPack.gradientB})` }} />
 
-            {/* Card grid — scrollable */}
+            {/* Cards grid — image only, uniform size */}
             <div className="overflow-y-auto flex-1 px-4 pt-4 pb-6">
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
-                {previewPack.cards.map((card, i) => {
-                  const rc = RARITY_COLORS[card.rarity];
-                  return (
-                    <div key={i} className="card-thumb" style={{ border: `1.5px solid ${rc.border}` }}>
-                      {/* Card image area — colored bg with emoji */}
-                      <div
-                        style={{
-                          height: 100,
-                          background: `linear-gradient(160deg, ${rc.bg}, white)`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 40,
-                          position: "relative",
-                        }}
-                      >
-                        {card.emoji}
-                        {/* Rarity dot top-right */}
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: 8, right: 8,
-                            width: 8, height: 8,
-                            borderRadius: "50%",
-                            background: rc.dot,
-                          }}
-                        />
-                      </div>
-
-                      {/* Card info */}
-                      <div style={{ padding: "8px 10px 10px", display: "flex", flexDirection: "column", gap: 4, background: "white" }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: "#0f172a", lineHeight: 1.3 }}>{card.name}</p>
-                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                          <div style={{ width: 5, height: 5, borderRadius: "50%", background: rc.dot, flexShrink: 0 }} />
-                          <span style={{ fontSize: 9, fontWeight: 600, color: rc.text, letterSpacing: "0.06em", textTransform: "uppercase" }}>{card.rarity}</span>
-                        </div>
-                        <p style={{ fontSize: 10, color: "#94a3b8", lineHeight: 1.5, marginTop: 2 }}>{card.description}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+                {previewPack.cards.map((card, i) => (
+                  <div
+                    key={i}
+                    style={{ borderRadius: 14, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.10)", transition: "transform 0.15s ease" }}
+                    onClick={() => setExpandedCard(card)}
+                    onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.03)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+                  >
+                    <img
+                      src={card.image}
+                      alt={card.name}
+                      style={{ width: "100%", display: "block", aspectRatio: "2/3", objectFit: "cover" }}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ══════════ EXPANDED CARD OVERLAY ══════════ */}
+      {expandedCard && (
+        <div
+          className="fade-in"
+          style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(0,0,0,0.78)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center" }}
+          onClick={() => setExpandedCard(null)}
+        >
+          <img
+            src={expandedCard.image}
+            alt={expandedCard.name}
+            className="card-expand-img"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </main>
