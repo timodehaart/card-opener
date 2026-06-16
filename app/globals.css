@@ -63,7 +63,8 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: #e5e7eb; /* neutral-200 */
     font-family: var(--font-satoshi), sans-serif;
   }
 }

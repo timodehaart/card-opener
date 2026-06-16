@@ -25,15 +25,11 @@ export const metadata: Metadata = {
   description: "Pick a pack and open your cards.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={satoshi.variable}>
-        <div className="relative mx-auto flex h-[100dvh] w-[375px] max-w-[375px] flex-col overflow-hidden bg-white">
+      <body className={`${satoshi.variable} bg-neutral-100 flex items-start justify-center min-h-screen`}>
+        <div className="relative flex h-[100dvh] w-[375px] max-w-[375px] flex-col overflow-hidden bg-white shadow-xl">
           <Header />
           <div className="flex-1 overflow-hidden">{children}</div>
         </div>
