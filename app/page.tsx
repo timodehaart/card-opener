@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Bell,
@@ -19,6 +20,7 @@ const PACK_TIMER_SECONDS = 12 * 60 * 60;
 const STORAGE_KEY = "pack-timer-state";
 
 export default function HomePage() {
+  const router = useRouter();
   const [giftCount, setGiftCount] = useState(2);
   const [secondsLeft, setSecondsLeft] = useState(PACK_TIMER_SECONDS);
 
@@ -131,9 +133,9 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 flex h-[214px] items-start justify-center gap-0 pt-[4px]">
-          <Image src="/packs/art_pack.png" alt="Modern Art" width={120} height={214} className="relative left-[32px] h-[214px] w-auto object-contain" />
-          <Image src="/packs/philosophy_pack.png" alt="Age of Reason" width={120} height={214} className="h-[214px] w-auto object-contain" />
-          <Image src="/packs/science_pack.png" alt="Scientific Revolution" width={120} height={214} className="relative right-[32px] h-[214px] w-auto object-contain" />
+          <Image onClick={() => router.push("/pack?type=art")} src="/packs/art_pack.png" alt="Modern Art" width={120} height={214} className="relative left-[32px] h-[214px] w-auto cursor-pointer object-contain" />
+          <Image onClick={() => router.push("/pack?type=philosophy")} src="/packs/philosophy_pack.png" alt="Age of Reason" width={120} height={214} className="h-[214px] w-auto cursor-pointer object-contain" />
+          <Image onClick={() => router.push("/pack?type=science")} src="/packs/science_pack.png" alt="Scientific Revolution" width={120} height={214} className="relative right-[32px] h-[214px] w-auto cursor-pointer object-contain" />
         </div>
 
         <div className="absolute bottom-[-16px] left-1/2 z-20 flex -translate-x-1/2 items-center gap-[14px]">
