@@ -65,23 +65,14 @@ function PackPageInner() {
         }}
       />
 
-      {/* Back button */}
-      <button
-        onClick={() => router.back()}
-        aria-label="Go back"
-        className="absolute left-4 top-4 z-20 flex h-[36px] w-[36px] items-center justify-center rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.12)]"
-      >
-        <ChevronLeft size={20} strokeWidth={2} />
-      </button>
-
       {/* Pack image — centered in upper portion */}
-      <div className="relative z-10 mt-[60px] flex flex-1 items-center justify-center">
+      <div className="relative z-10 mt-[20px] flex flex-1 items-center justify-center">
         <Image
           src={pack.src}
           alt={pack.alt}
-          width={220}
-          height={320}
-          className="h-auto w-[220px] object-contain drop-shadow-2xl"
+          width={300}
+          height={420}
+          className="h-auto w-[300px] object-contain drop-shadow-2xl"
           priority
         />
       </div>
@@ -92,8 +83,8 @@ function PackPageInner() {
         <div className="flex items-center justify-center gap-3">
           {/* Back arrow */}
           <button
-            onClick={switchPack}
-            aria-label="Previous pack"
+            onClick={() => router.replace("/")}
+            aria-label="Go back"
             className="flex h-[40px] w-[40px] items-center justify-center rounded-full border border-neutral-200 bg-white shadow-sm"
           >
             <ChevronLeft size={18} strokeWidth={2} />
