@@ -33,8 +33,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={satoshi.variable}>
-        <Header />
-        {children}
+        <div className="relative mx-auto flex h-[100dvh] w-[375px] max-w-[375px] flex-col overflow-hidden bg-white">
+          <Header />
+          <div className="flex-1 overflow-hidden">{children}</div>
+        </div>
       </body>
     </html>
   );

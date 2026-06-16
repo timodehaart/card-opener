@@ -27,7 +27,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="relative z-50 h-10 border-b border-neutral-200 bg-white">
+      <header className="relative z-50 h-10 w-full border-b border-neutral-200 bg-white">
         <button
           aria-label="Open menu"
           onClick={() => setIsOpen(true)}
@@ -42,14 +42,14 @@ export default function Header() {
       </header>
 
       <div
-        className={`fixed inset-0 z-50 bg-black/20 transition-opacity duration-300 ${
+        className={`absolute inset-0 z-50 bg-black/20 transition-opacity duration-300 ${
           isOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
         onClick={() => setIsOpen(false)}
       />
 
       <aside
-        className={`fixed left-0 top-0 z-50 h-screen w-[240px] bg-white shadow-lg transition-transform duration-300 ease-out ${
+        className={`absolute left-0 top-0 z-50 h-full w-[240px] bg-white shadow-lg transition-transform duration-300 ease-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
