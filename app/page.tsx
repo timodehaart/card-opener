@@ -1,5 +1,5 @@
-import PackSelection from "@/app/components/PackSelection";
-
-export default function Home() {
-  return <PackSelection />;
+export default function HomePage() {
+  return (
+    <main className="min-h-screen bg-white"></main>
+  );
 }
