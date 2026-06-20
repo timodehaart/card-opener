@@ -17,9 +17,8 @@ const navItems = [
   { label: "Home", href: "/", icon: Home },
   { label: "Collection", href: "/collection", icon: Library },
   { label: "Card Scanner", href: "/card-scanner", icon: ScanLine },
-  { label: "Puzzles", href: "/puzzles", icon: Puzzle },
-  { label: "Mechanics", href: "/mechanics", icon: Gamepad2 },
-  { label: "VS Battle", href: "/vs-battle", icon: Swords },
+  { label: "Challenges", href: "/challenges", icon: Puzzle },
+  { label: "Battle Ground", href: "/gameplay", icon: Swords },
 ];
 
 export default function Header() {
@@ -27,7 +26,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="relative z-50 h-10 w-full border-b border-neutral-200 bg-white">
+      <header className="relative z-50 h-10 border-b border-neutral-200 bg-white">
         <button
           aria-label="Open menu"
           onClick={() => setIsOpen(true)}
@@ -37,19 +36,19 @@ export default function Header() {
         </button>
 
         <h1 className="flex h-full items-center justify-center text-[16px] font-medium">
-          Descartes
+          Dezcartes
         </h1>
       </header>
 
       <div
-        className={`absolute inset-0 z-50 bg-black/20 transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 bg-black/20 transition-opacity duration-300 ${
           isOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
         onClick={() => setIsOpen(false)}
       />
 
       <aside
-        className={`absolute left-0 top-0 z-50 h-full w-[240px] bg-white shadow-lg transition-transform duration-300 ease-out ${
+        className={`fixed left-0 top-0 z-50 h-screen w-[240px] bg-white shadow-lg transition-transform duration-300 ease-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

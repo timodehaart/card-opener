@@ -14,6 +14,7 @@ import {
   Gamepad2,
   Puzzle,
   Swords,
+  ScanLine,
 } from "lucide-react";
 
 const PACK_TIMER_SECONDS = 12 * 60 * 60;
@@ -169,6 +170,14 @@ export default function HomePage() {
       <section className="mx-[16px] mt-[34px] grid grid-cols-2 gap-x-[20px] gap-y-[18px] pb-[12px]">
         {[
           {
+            label: "Card Scanner",
+            href: "/card-scanner",
+            icon: ScanLine,
+            color: "#BFC4D2",
+            gradient:
+              "linear-gradient(135deg,#E4EEFF 0%,#C8D9FF 50%,#AFC5F5 100%)",
+          },
+          {
             label: "Collection",
             href: "/collection",
             icon: Copy,
@@ -177,24 +186,16 @@ export default function HomePage() {
               "linear-gradient(135deg,#F59E0B 0%,#F97316 50%,#EF4444 100%)",
           },
           {
-            label: "Puzzles",
-            href: "/puzzles",
+            label: "Challenges",
+            href: "/challenges",
             icon: Puzzle,
             color: "rgba(79,175,138,0.6)",
             gradient:
               "linear-gradient(135deg,#10B981 0%,#22C55E 50%,#84CC16 100%)",
           },
           {
-            label: "Mechanics",
-            href: "/mechanics",
-            icon: Gamepad2,
-            color: "#BFC4D2",
-            gradient:
-              "linear-gradient(135deg,#E4EEFF 0%,#C8D9FF 50%,#AFC5F5 100%)",
-          },
-          {
-            label: "VS Battle",
-            href: "/vs-battle",
+            label: "Battle Ground",
+            href: "/gameplay",
             icon: Swords,
             color: "#CCD2DA",
             gradient:

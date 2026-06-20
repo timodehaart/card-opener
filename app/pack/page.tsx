@@ -111,7 +111,10 @@ function PackPageInner() {
         </div>
 
         {/* Open Pack button */}
-        <button className="mt-4 h-[48px] w-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-[15px] font-semibold text-white shadow-[0_4px_14px_rgba(59,130,246,0.4)] active:scale-[0.98] transition-transform">
+        <button
+          onClick={() => router.push(`/pack-open?type=${type}`)}
+          className="mt-4 h-[48px] w-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-[15px] font-semibold text-white shadow-[0_4px_14px_rgba(59,130,246,0.4)] active:scale-[0.98] transition-transform"
+        >
           Open Pack
         </button>
       </div>
